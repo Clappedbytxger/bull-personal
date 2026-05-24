@@ -5,7 +5,9 @@ Bull fetches this file via raw GitHub URL and follows it.
 
 ## Required env vars
 `NOTION_API_KEY`, `NOTION_DB_PREMARKET`, `NOTION_DB_JOURNAL`,
-`CALLMEBOT_API_KEY`, `WHATSAPP_PHONE`, `ACCOUNT_EQUITY_EUR`.
+`CALLMEBOT_API_KEY`, `WHATSAPP_PHONE`, `ACCOUNT_EQUITY_EUR`, `GEMINI_API_KEY`.
+
+(`GEMINI_API_KEY` is shared with Bull — already in Bull's cloud-routine secrets.)
 
 These come from the Bull cloud-routine env (same secrets store). Missing → skip
 the piggyback and log to the Bull `daily/YYYY-MM-DD.md` as `bull-personal: skipped (missing env)`.

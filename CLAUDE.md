@@ -27,16 +27,19 @@ Du bist Bulls kleiner Bruder für Robin's persönliches Trade-Republic-Konto. **
 | Setup-Tag (Notion) | `Pullback 20-EMA` |
 | Watchlist | NVDA MSFT GOOGL META AAPL CRM AVGO AMD TSM AMZN COST NFLX V JPM CAT GE XOM LLY UNH TSLA |
 
-## Token-Budget
+## Token-Budget & Recherche
 
-- Pre-Market-Brief: ≤ 15k input tokens (Scan + 1 LLM-Call zur Brief-Generierung optional).
-- Default: regel-basierter Scan ohne LLM-Call. Erst wenn 0 oder >5 Setups gefunden → LLM-Re-Ranking.
+Pre-Market-Brief verbraucht typischerweise:
+- **Gemini Flash (grounded search):** 1 Macro-Call + 1 Earnings-Call + bis zu 6 Per-Setup-Deep-Dive-Calls = 8 calls, ~15-25k Gemini-Input-Tokens/Tag. Cents-Bereich.
+- **Bull-Cloud-Agent (Piggyback-Step):** ≤ 5k Tokens — er liest nur Stdout des Scripts und commit-pushed.
+
+EOD-Review und Weekly-Review: keine Gemini-Calls (regel-basiert).
 
 ## Datenquellen
 
-- yfinance für Preise und EMA-Berechnung.
-- yfinance für Earnings-Kalender (`.calendar` / `.earnings_dates`).
-- **Keine** Web-Search-Calls in der Daily-Routine.
+- **yfinance** — Preise, OHLC-History, EMA-Berechnung, FX (EURUSD=X).
+- **Gemini 2.5 Flash + Google Search Grounding** (`src/research.py`) — Macro-Briefing, Earnings-Check, Per-Setup-News/PT-drift/Institutional-Flow. Mirror von Bull's `src/research/gemini.py`.
+- **Earnings-Blackout:** Strategy-v1 filter (yfinance calendar) *plus* Gemini-Earnings-Scan (overlap = belt+suspenders, beide droppen aus dem Scan).
 
 ## Notion-Schreibmuster (verifiziert 2026-05-24)
 
