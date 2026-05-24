@@ -83,8 +83,16 @@ def main() -> int:
         return 0
 
     try:
-        top = setups[0].symbol if setups else ""
-        write_premarket_brief(date_iso, len(setups), top, md)
+        setups_detail = " · ".join(
+            f"{s.symbol} {s.entry:.2f}/{s.stop:.2f}/{s.target:.2f}" for s in setups
+        ) or "—"
+        write_premarket_brief(
+            date_iso=date_iso,
+            n_setups=len(setups),
+            setups_detail=setups_detail,
+            market_bias="Neutral",
+            brief_markdown=md,
+        )
         print("[pre_market_brief] Notion page written")
     except Exception as exc:
         print(f"[pre_market_brief] Notion write failed: {exc}")

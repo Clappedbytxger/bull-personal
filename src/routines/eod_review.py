@@ -1,40 +1,41 @@
-"""End-of-day review (21:30 DE Mon-Fri).
+"""End-of-day review (runs inside Bull's 05-close-summary at 21:15 UTC).
 
 Pulls every Notion Trade-Journal page with Status=Open, fetches current close,
-and emits per-position actions: HOLD / EXIT-TARGET / EXIT-STOP / TRAIL.
-WhatsApps Robin only if at least one action needs his manual attention.
+and emits per-position actions: HOLD / EXIT-STOP / EXIT-TARGET / TRAIL-BE.
+WhatsApps Robin only if ≥1 position needs his manual attention.
 """
 from __future__ import annotations
 
 import sys
 from datetime import datetime
 
-from ..notion import (
-    list_open_trades, read_number, read_text, read_title,
-)
+from ..notion import list_open_trades, read_number, read_text, read_select
 from ..market import fetch_bars
 from ..notify import send_whatsapp
 
 
-def evaluate_position(symbol: str, entry: float, stop: float, target: float) -> dict:
-    bars = fetch_bars(symbol, days=30)
+def evaluate_position(ticker: str, entry: float, stop: float, target: float,
+                      direction: str = "Long") -> dict:
+    bars = fetch_bars(ticker, days=30)
     if bars is None:
-        return {"symbol": symbol, "action": "DATA-FAIL", "close": None, "r": None, "msg": "no bars"}
+        return {"ticker": ticker, "action": "DATA-FAIL", "close": None, "r": None, "msg": "no bars"}
     close = bars.last_close
-    risk = entry - stop
-    r = (close - entry) / risk if risk > 0 else 0.0
+    risk = (entry - stop) if direction == "Long" else (stop - entry)
+    move = (close - entry) if direction == "Long" else (entry - close)
+    r = move / risk if risk > 0 else 0.0
 
-    # Daily-bar-based check (TR has no overnight stops anyway; intraday tick irrelevant for swing)
-    if close <= stop:
-        action, msg = "EXIT-STOP", f"close {close:.2f} ≤ SL {stop:.2f}"
-    elif close >= target:
-        action, msg = "EXIT-TARGET", f"close {close:.2f} ≥ TP {target:.2f}"
+    hit_stop = close <= stop if direction == "Long" else close >= stop
+    hit_target = close >= target if direction == "Long" else close <= target
+
+    if hit_stop:
+        action, msg = "EXIT-STOP", f"close {close:.2f} hit SL {stop:.2f}"
+    elif hit_target:
+        action, msg = "EXIT-TARGET", f"close {close:.2f} hit TP {target:.2f}"
     elif r >= 1.0:
-        # at +1R, trail SL to break-even (manual hint)
         action, msg = "TRAIL-BE", f"r={r:.2f} → SL auf Entry {entry:.2f} ziehen"
     else:
         action, msg = "HOLD", f"close {close:.2f} r={r:.2f}"
-    return {"symbol": symbol, "action": action, "close": round(close, 2), "r": round(r, 2), "msg": msg}
+    return {"ticker": ticker, "action": action, "close": round(close, 2), "r": round(r, 2), "msg": msg}
 
 
 def main() -> int:
@@ -52,16 +53,18 @@ def main() -> int:
 
     results = []
     for pg in pages:
-        sym = (read_text(pg, "Symbol") or read_title(pg).split()[0]).upper()
-        entry = read_number(pg, "Entry")
-        stop = read_number(pg, "SL")
-        target = read_number(pg, "TP")
-        if None in (entry, stop, target):
-            results.append({"symbol": sym, "action": "DATA-FAIL", "msg": "missing entry/SL/TP in Notion"})
+        ticker = (read_text(pg, "Ticker") or "").upper()
+        entry = read_number(pg, "Entry Price")
+        stop = read_number(pg, "Stop Loss")
+        target = read_number(pg, "Target")
+        direction = read_select(pg, "Direction") or "Long"
+        if None in (entry, stop, target) or not ticker:
+            results.append({"ticker": ticker or "?", "action": "DATA-FAIL",
+                             "msg": "missing Ticker/Entry/SL/Target in Notion"})
             continue
-        r = evaluate_position(sym, entry, stop, target)
+        r = evaluate_position(ticker, entry, stop, target, direction)
         results.append(r)
-        print(f"  · {r['symbol']:<6} {r['action']:<12} {r['msg']}")
+        print(f"  · {r['ticker']:<6} {r['action']:<12} {r['msg']}")
 
     actionables = [r for r in results if r["action"] not in ("HOLD",)]
     if not actionables:
@@ -70,7 +73,7 @@ def main() -> int:
 
     lines = [f"Bull-Personal EOD {datetime.utcnow().strftime('%Y-%m-%d')}", ""]
     for r in actionables:
-        lines.append(f"• {r['symbol']}: {r['action']} — {r['msg']}")
+        lines.append(f"• {r['ticker']}: {r['action']} — {r['msg']}")
     lines += ["", "Manuelle Aktion in TR-App nötig."]
     res = send_whatsapp("\n".join(lines))
     print(f"[eod_review] WhatsApp: {res}")

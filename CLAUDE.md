@@ -24,6 +24,7 @@ Du bist Bulls kleiner Bruder für Robin's persönliches Trade-Republic-Konto. **
 | TP | +16% (1:2 R:R) |
 | Risk | 1% des Konto-Equity |
 | Max Positions | 3 |
+| Setup-Tag (Notion) | `Pullback 20-EMA` |
 | Watchlist | NVDA MSFT GOOGL META AAPL CRM AVGO AMD TSM AMZN COST NFLX V JPM CAT GE XOM LLY UNH TSLA |
 
 ## Token-Budget
@@ -37,10 +38,10 @@ Du bist Bulls kleiner Bruder für Robin's persönliches Trade-Republic-Konto. **
 - yfinance für Earnings-Kalender (`.calendar` / `.earnings_dates`).
 - **Keine** Web-Search-Calls in der Daily-Routine.
 
-## Notion-Schreibmuster
+## Notion-Schreibmuster (verifiziert 2026-05-24)
 
-- **Pre-Market-Briefs DB**: 1 Page pro Tag, Title `"Pre-Market YYYY-MM-DD"`, Properties: Datum, Anzahl Setups, Top-Symbol.
-- **Trade-Journal DB**: 1 Page pro Trade, Title `"<Sym> <Entry-Date>"`, Properties: Symbol, Entry, SL, TP, Size, Risk-€, Setup-Tag, Status (Open/Closed-Win/Closed-Loss/Stopped), Exit, R-Multiple, Notes.
+- **Pre-Market-Briefs DB** (`048f4a90-...`): 1 Page pro Tag, Title-Property `Brief` (`"Pre-Market YYYY-MM-DD"`). Felder: `Date` (date), `Active Setups Count` (number), `Setups Detail` (text), `Earnings Today` (text), `Macro Events` (text), `Market Bias` (select: Bullish/Neutral/Bearish/Choppy), `Reviewed` (checkbox, default false), `Notes` (text), `Trades Taken Today` (number, manuell).
+- **Trade-Journal DB** (`f5f0636d-...`): 1 Page pro Trade, Title-Property `Trade` (`"<TICKER> <YYYY-MM-DD>"`). Felder beim Eröffnen: `Ticker`, `Direction` (Long/Short), `Entry Date`, `Entry Price`, `Stop Loss`, `Target`, `Shares`, `Position Size EUR`, `Risk EUR`, `Planned R:R`, `Setup` (Pullback 20-EMA / VCP Breakout / Mean Reversion / Other), `Status=Open`, `Paper or Live`, `Rationale`. Beim Schließen: `Exit Date`, `Exit Price`, `Actual R`, `P&L EUR`, `P&L Percent`, `Status=Closed Win/Closed Loss`, `Lesson`, optional `Rule Violation` (checkbox), `Emotional State`.
 
 ## Lessons Learned
 
