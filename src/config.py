@@ -25,7 +25,7 @@ STRATEGY = {
     "pullback_lookback": 3,           # last N daily bars
     "stop_pct": 8.0,
     "target_pct": 16.0,
-    "risk_per_trade_pct": 1.0,
+    "risk_per_trade_pct": 1.5,
     "max_positions": 3,
     "earnings_blackout_days": 3,
     "entry_buffer_pct": 0.1,          # stop-buy 0.1% above confirmation high
@@ -37,7 +37,7 @@ NOTION_DB_PREMARKET = os.getenv("NOTION_DB_PREMARKET", "")
 NOTION_DB_JOURNAL = os.getenv("NOTION_DB_JOURNAL", "")
 CALLMEBOT_API_KEY = os.getenv("CALLMEBOT_API_KEY", "")
 WHATSAPP_PHONE = os.getenv("WHATSAPP_PHONE", "")
-ACCOUNT_EQUITY_EUR = float(os.getenv("ACCOUNT_EQUITY_EUR", "500"))
+ACCOUNT_EQUITY_EUR = float(os.getenv("ACCOUNT_EQUITY_EUR", "1000"))
 
 
 def require(name: str, value: str) -> str:
